@@ -1,0 +1,45 @@
+
+# Global configuration
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Alertmanager configuration it send alerts to mail/slackprometheus
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "localhost:9093"
+
+# Load rules once and perodically evaluate them
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+ - "alert-rules/*.yaml"
+# Scrape configurations
+scrape_configs:
+
+  # Prometheus monitoring itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: "prometheus"
+
+  # EC2 dynamic service discovery our instances with labels
+  - job_name: 'ec2-dynamic-discovery'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+        filters:
+          - name: 'tag:Monitoring'
+            values: ['true']
+ #we modify our instance id and labels withour our requirements 
+    relabel_configs:
+      - source_labels: [__meta_ec2_tag_Name]
+        target_label: app
+
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+
+    scrape_native_histograms: true

@@ -1,0 +1,13 @@
+groups:
+- name: example
+  labels:
+    team: monitoring
+  rules:
+  - alert: SysytemisDown
+    expr: up != 1
+    for: 1m
+    keep_firing_for: 5m
+    labels:
+      severity: page
+    annotations:
+      summary: system isdown
